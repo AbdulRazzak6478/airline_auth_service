@@ -17,7 +17,7 @@ CREATE TABLE users(
     role user_role NOT NULL ,
     password VARCHAR(255) NOT NULL ,
     status user_status NOT NULL DEFAULT 'ACTIVE',
-    email_verified BOOLEAN DEFAULT false,
+    email_verified BOOLEAN DEFAULT FALSE,
 
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
