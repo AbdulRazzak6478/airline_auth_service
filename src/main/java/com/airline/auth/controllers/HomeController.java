@@ -14,4 +14,10 @@ public class HomeController {
 
         return ResponseEntity.ok("Hello World");
     }
+
+    @GetMapping("/user")
+    public ResponseEntity<String> user() {
+        System.out.println("inside user controller");
+        return ResponseEntity.ok("Hello World");
+    }
 }

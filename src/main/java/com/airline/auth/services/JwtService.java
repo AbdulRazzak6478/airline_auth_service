@@ -66,6 +66,8 @@ public class JwtService {
 
         claims.put("role","CUSTOMER");
 
+        claims.put("tokenType","AccessToken");
+
         claims.put("userEmail", userDetails.getUsername());
         return buildToken(
                 claims,
@@ -81,6 +83,8 @@ public class JwtService {
         CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
 
         claims.put("role",customUserDetails.getUser().getRole());
+
+        claims.put("tokenType","RefreshToken");
 
         claims.put("userEmail", userDetails.getUsername());
         return buildToken(
@@ -127,6 +131,18 @@ public class JwtService {
                 Claims::getExpiration
         );
 
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+
+        final String username = extractUsername(token);
+
+        return username.equals(userDetails.getUsername())
+                && !isTokenExpired(token);
     }
 
 
