@@ -48,7 +48,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column( name = "status", nullable = false)
+    @Column( name = "status")
     private UserStatus status;
 
 
