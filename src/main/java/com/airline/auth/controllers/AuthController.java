@@ -6,9 +6,11 @@ import com.airline.auth.dto.common.ApiResponse;
 import com.airline.auth.dto.common.ApiResponseBuilder;
 import com.airline.auth.dto.request.LoginUserRequest;
 import com.airline.auth.dto.request.RegisterUserRequest;
+import com.airline.auth.dto.response.LoginTokenResponse;
 import com.airline.auth.dto.response.UserResponse;
 import com.airline.auth.enums.Role;
 import com.airline.auth.services.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -54,21 +56,21 @@ public class AuthController {
     }
 
     @PostMapping(ApiRoutes.LOGIN)
-    public ResponseEntity<ApiResponse<UserResponse>> login(
-           @Valid  @RequestBody LoginUserRequest loginUserRequest
+    public ResponseEntity<ApiResponse<LoginTokenResponse>> login(
+           @Valid  @RequestBody LoginUserRequest loginUserRequest,
+           HttpServletRequest httpServletRequest
     ){
 
 
         // Call Service
         System.out.println("login controller");
-        // response
-        UserResponse userResponse = authService.loginUser(loginUserRequest);
+        LoginTokenResponse tokenResponse = authService.loginUser(loginUserRequest, httpServletRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(
                 ApiResponseBuilder.success(
                         HttpStatus.CREATED.value(),
                         "Login Credentials Verified",
-                        userResponse,
+                        tokenResponse,
                         route + ApiRoutes.LOGIN
 
                 )
