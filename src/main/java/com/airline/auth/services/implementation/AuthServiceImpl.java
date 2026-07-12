@@ -11,6 +11,10 @@ import com.airline.auth.mapper.UserMapper;
 import com.airline.auth.repositories.UserRepository;
 import com.airline.auth.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +27,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Override
     public UserResponse registerUser(RegisterUserRequest registerUserRequest) {
@@ -64,16 +71,33 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserResponse loginUser(LoginUserRequest loginUserRequest) {
 
+        System.out.println("login service");
         // Check Email Exist or not
         User user = userRepository.findByEmail(loginUserRequest.getEmail())
                 .orElseThrow(()-> new ResourceNotFoundException("Email Not Exist"));
 
+        System.out.println("user : "+user.getId());
         // Password Compare
-        boolean isMatch = passwordEncoder.matches(loginUserRequest.getPassword(), user.getPassword());
+//        boolean isMatch = passwordEncoder.matches(loginUserRequest.getPassword(), user.getPassword());
+//
+//        if(!isMatch){
+//            throw new RuntimeException("Invalid Login Credentials");
+//        }
 
-        if(!isMatch){
-            throw new RuntimeException("Invalid Login Credentials");
-        }
+
+        // Spring check and authenticate
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginUserRequest.getEmail(),
+                        loginUserRequest.getPassword()
+                )
+        );
+
+        System.out.println("User Authenticated");
+
+
+        // Get User Details for token generation
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         // Check Refresh token Available
 
@@ -83,7 +107,9 @@ public class AuthServiceImpl implements AuthService {
 
         // return response
 
-        return null;
+        UserResponse userResponse = UserMapper.toResponse(user);
+
+        return userResponse;
     }
 
 }

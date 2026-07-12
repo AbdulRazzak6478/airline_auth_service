@@ -60,9 +60,9 @@ public class AuthController {
 
 
         // Call Service
-
+        System.out.println("login controller");
         // response
-        UserResponse userResponse = new UserResponse();
+        UserResponse userResponse = authService.loginUser(loginUserRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(
                 ApiResponseBuilder.success(
