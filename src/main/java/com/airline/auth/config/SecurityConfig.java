@@ -70,6 +70,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/user"
                         ).hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers(
+                                "/users/list"
+                        )
+                        .hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(daoAuthenticationProvider())
