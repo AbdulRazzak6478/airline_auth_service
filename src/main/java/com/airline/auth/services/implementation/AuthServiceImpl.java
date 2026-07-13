@@ -202,7 +202,7 @@ public class AuthServiceImpl implements AuthService {
 
         if(refreshTokenRecord.getRevoked())
         {
-            throw new InvalidOneTimeTokenException(" Invalid Token Revoked");
+            throw new InvalidOneTimeTokenException(" Invalid Token Revoked, Please Login");
         }
 
         if(refreshTokenRecord.getExpiresAt().isBefore(Instant.now()))
@@ -222,6 +222,18 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         return tokenResponse;
+    }
+
+    @Override
+    public void logout(String email) {
+
+        User user = userRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("User Not Not"));
+
+        RefreshToken token = refreshTokenRepository.findByUserId(user.getId()).orElseThrow(()-> new ResourceNotFoundException("Token Not Found"));
+
+        token.setRevoked(true);
+
+        refreshTokenRepository.save(token);
     }
 
 }

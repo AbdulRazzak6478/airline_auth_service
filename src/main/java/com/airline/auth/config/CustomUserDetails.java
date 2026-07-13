@@ -26,7 +26,7 @@ public class CustomUserDetails implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         System.out.println("inside custom user details " +user.getRole().toString());
         return List.of(
-                new SimpleGrantedAuthority(user.getRole().toString())
+                new SimpleGrantedAuthority("ROLE_"+user.getRole().toString())
         );
     }
 

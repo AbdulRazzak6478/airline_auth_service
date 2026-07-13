@@ -15,4 +15,6 @@ public interface AuthService {
 
     public LoginTokenResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
 
+    public void logout(String Email);
+
 }

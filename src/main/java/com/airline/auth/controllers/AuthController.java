@@ -1,6 +1,7 @@
 package com.airline.auth.controllers;
 
 
+import com.airline.auth.config.CustomUserDetails;
 import com.airline.auth.constants.ApiRoutes;
 import com.airline.auth.dto.common.ApiResponse;
 import com.airline.auth.dto.common.ApiResponseBuilder;
@@ -17,6 +18,9 @@ import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -92,6 +96,32 @@ public class AuthController {
                         "Token Refresh Successfully",
                         tokenResponse,
                         route + ApiRoutes.REFRESH
+                )
+        );
+    }
+
+    @PostMapping(ApiRoutes.LOGOUT)
+    public ResponseEntity<ApiResponse<String>> logout ()
+    {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+
+        System.out.println("inside logout controller");
+
+        String email = user.getUsername();
+
+        System.out.println("Authenticated user email : "+ email);
+
+        authService.logout(email);
+
+        return ResponseEntity.status(HttpStatus.OK.value()).body(
+                ApiResponseBuilder.success(
+                        HttpStatus.OK.value(),
+                        "Successfully logout User",
+                        "User Access Revoked",
+                        route + ApiRoutes.LOGOUT
                 )
         );
     }
