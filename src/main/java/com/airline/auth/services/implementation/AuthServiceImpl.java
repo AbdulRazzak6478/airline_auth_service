@@ -1,6 +1,10 @@
 package com.airline.auth.services.implementation;
 
+import com.airline.auth.config.CustomUserDetails;
+import com.airline.auth.config.CustomUserDetailsService;
+import com.airline.auth.config.JwtAuthenticationEntryPoint;
 import com.airline.auth.dto.request.LoginUserRequest;
+import com.airline.auth.dto.request.RefreshTokenRequest;
 import com.airline.auth.dto.request.RegisterUserRequest;
 import com.airline.auth.dto.response.LoginTokenResponse;
 import com.airline.auth.dto.response.UserResponse;
@@ -14,12 +18,15 @@ import com.airline.auth.repositories.RefreshTokenRepository;
 import com.airline.auth.repositories.UserRepository;
 import com.airline.auth.services.AuthService;
 import com.airline.auth.services.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.ott.InvalidOneTimeTokenException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +52,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private JwtAuthenticationEntryPoint entryPoint;
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
 
     @Override
     public UserResponse registerUser(RegisterUserRequest registerUserRequest) {
@@ -167,6 +180,48 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    @Override
+    public LoginTokenResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+
+        String token = refreshTokenRequest.getRefreshToken();
+
+
+        String userEmail = jwtService.extractUsername(refreshTokenRequest.getRefreshToken());
+
+        User user = userRepository.findByEmail(userEmail).orElseThrow(()-> new ResourceNotFoundException("Email Not Exist"));
+
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
+
+        if(!jwtService.isTokenValid(token, userDetails)){
+            throw new RuntimeException("Token Expired");
+        }
+
+        RefreshToken refreshTokenRecord = refreshTokenRepository.findByToken(token).orElseThrow(()-> new ResourceNotFoundException("Token Not Found"));
+
+        if(refreshTokenRecord.getRevoked())
+        {
+            throw new InvalidOneTimeTokenException(" Invalid Token Revoked");
+        }
+
+        if(refreshTokenRecord.getExpiresAt().isBefore(Instant.now()))
+        {
+            throw new InvalidOneTimeTokenException("Token Expired,Please Login Again");
+        }
+
+        String accessToken = jwtService.generateToken(userDetails);
+
+        refreshTokenRepository.save(refreshTokenRecord);
+
+        LoginTokenResponse tokenResponse = LoginTokenResponse.builder()
+                .userId(user.getId())
+                .email(user.getEmail())
+                .accessToken(accessToken)
+                .refreshToken(token)
+                .build();
+
+        return tokenResponse;
     }
 
 }

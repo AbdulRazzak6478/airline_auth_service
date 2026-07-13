@@ -5,6 +5,7 @@ import com.airline.auth.constants.ApiRoutes;
 import com.airline.auth.dto.common.ApiResponse;
 import com.airline.auth.dto.common.ApiResponseBuilder;
 import com.airline.auth.dto.request.LoginUserRequest;
+import com.airline.auth.dto.request.RefreshTokenRequest;
 import com.airline.auth.dto.request.RegisterUserRequest;
 import com.airline.auth.dto.response.LoginTokenResponse;
 import com.airline.auth.dto.response.UserResponse;
@@ -12,13 +13,11 @@ import com.airline.auth.enums.Role;
 import com.airline.auth.services.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -73,6 +72,26 @@ public class AuthController {
                         tokenResponse,
                         route + ApiRoutes.LOGIN
 
+                )
+        );
+    }
+
+
+    @PostMapping(ApiRoutes.REFRESH)
+    public ResponseEntity<ApiResponse<LoginTokenResponse>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest refreshTokenRequest
+    )
+    {
+
+        System.out.println("refresh controller");
+        LoginTokenResponse tokenResponse = authService.refreshToken(refreshTokenRequest);
+
+        return ResponseEntity.status(HttpStatus.OK.value()).body(
+                ApiResponseBuilder.success(
+                        HttpStatus.OK.value(),
+                        "Token Refresh Successfully",
+                        tokenResponse,
+                        route + ApiRoutes.REFRESH
                 )
         );
     }

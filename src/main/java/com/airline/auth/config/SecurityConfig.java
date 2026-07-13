@@ -63,12 +63,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/register",
-                                "/auth/login"
+                                "/auth/login",
+                                "/auth/refresh"
                         )
                         .permitAll()
                         .requestMatchers(
                                 "/user"
-                        ).hasAnyRole("USER", "ADMIN")
+                        ).hasAnyRole("CUSTOMER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(daoAuthenticationProvider())
