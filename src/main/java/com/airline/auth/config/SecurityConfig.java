@@ -83,7 +83,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                 );
 
-
+        System.out.println("inside securityFilterChain");
         return http.build();
     }
 
